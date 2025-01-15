@@ -3,259 +3,619 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecteur Vidéo Amélioré</title>
+    <title>Recherche d'Images - Version Avancée</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* ====== Styles globaux ====== */
-        body {
-            background-color: #121212;
-            color: white;
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #7289da;
+            --primary-hover: #5a73bd;
+            --background: #f5f5f5;
+            --card-background: #fff;
+            --text-color: #333;
+            --error-color: #ff4444;
+            --success-color: #00C851;
+            --warning-color: #ffbb33;
+            --header-height: 60px;
+            --sidebar-width: 250px;
+        }
+
+        * {
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            gap: 20px;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* ====== Barre URL ====== */
-        .url-container {
-            display: flex;
-            gap: 10px;
-            width: 90%;
-            max-width: 800px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            grid-template-areas: 
+                "header header"
+                "sidebar main";
+            grid-template-rows: var(--header-height) 1fr;
+            grid-template-columns: var(--sidebar-width) 1fr;
         }
 
-        .url-input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 2px solid #ff00ff;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-        }
-
-        .url-input:focus {
-            outline: none;
-            border-color: #00ffff;
-            box-shadow: 0 0 10px #00ffff;
-        }
-
-        .url-button {
-            padding: 10px 20px;
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .url-button:hover {
-            transform: scale(1.1);
-            opacity: 0.9;
-        }
-
-        /* ====== Conteneur vidéo ====== */
-        .video-container {
-            position: relative;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        video {
-            width: 100%;
-            display: block;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.8);
+        header {
+            grid-area: header;
+            background: var(--card-background);
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--card-background);
+            padding: 20px;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .main-content {
+            grid-area: main;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .search-section {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
             padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .filters-section {
+            margin-top: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #eee;
+            color: var(--text-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .image-card {
+            position: relative;
+            background: var(--card-background);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-info {
+            padding: 15px;
+        }
+
+        .image-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .action-btn.favorite {
+            color: var(--error-color);
+        }
+
+        .stats-bar {
+            background: var(--card-background);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        .video-container:hover .controls {
-            opacity: 1;
-        }
-
-        .controls button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-
-        .controls button:hover {
-            transform: scale(1.1);
-            color: #ff00ff;
-        }
-
-        /* ====== Barre de progression ====== */
-        .progress-container {
-            flex-grow: 1;
-            margin: 0 10px;
-            background: rgba(255, 255, 255, 0.2);
-            height: 5px;
-            border-radius: 5px;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            background: linear-gradient(90deg, #ff00ff, #00ffff);
-            border-radius: 5px;
-        }
-
-        /* ====== Contrôle du volume ====== */
-        .volume-container {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            position: relative;
-        }
-
-        .volume-slider {
-            width: 0;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            transition: width 0.3s ease;
-            cursor: pointer;
-        }
-
-        .volume-container:hover .volume-slider {
-            width: 100px;
-        }
-
-        .volume-level {
-            height: 100%;
-            background: #ff00ff;
-            width: 100%;
-            border-radius: 5px;
-        }
-
-        /* ====== Erreur ====== */
-        .error-message {
-            color: #ff4444;
-            font-size: 14px;
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            background: #eee;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
-            .url-container {
-                flex-direction: column;
+            body {
+                grid-template-areas: 
+                    "header"
+                    "main";
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: var(--header-height);
+                bottom: 0;
+                width: var(--sidebar-width);
+                z-index: 900;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
         }
     </style>
 </head>
 <body>
-    <div class="url-container">
-        <input type="text" class="url-input" id="videoUrl" placeholder="Entrez l'URL de la vidéo MP4">
-        <button class="url-button" id="loadVideo">Charger</button>
-        <span class="error-message" id="errorMessage"></span>
-    </div>
+    <header>
+        <h1>Recherche d'Images Avancée</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" id="toggleTheme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="btn btn-secondary" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
 
-    <div class="video-container">
-        <video id="video"></video>
-        <div class="controls">
-            <button id="playPause"><i class="fas fa-play"></i></button>
-            <div class="volume-container">
-                <button id="muteButton"><i class="fas fa-volume-up"></i></button>
-                <div class="volume-slider" id="volumeSlider">
-                    <div class="volume-level" id="volumeLevel"></div>
+    <aside class="sidebar">
+        <div class="search-section">
+            <div class="input-group">
+                <label for="tagInput">Tag de recherche</label>
+                <input type="text" id="tagInput" placeholder="Exemple: hug, kiss" list="tagSuggestions">
+                <datalist id="tagSuggestions"></datalist>
+            </div>
+
+            <div class="input-group">
+                <label for="amountInput">Nombre d'images</label>
+                <select id="amountInput">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+
+            <div class="filters-section">
+                <h3>Filtres</h3>
+                <div class="filter-group">
+                    <label for="sortOrder">Tri</label>
+                    <select id="sortOrder">
+                        <option value="recent">Plus récent</option>
+                        <option value="popular">Plus populaire</option>
+                        <option value="random">Aléatoire</option>
+                    </select>
                 </div>
             </div>
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar" id="progressBar"></div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="fetchImages()">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+                <button class="btn btn-secondary" onclick="clearResults()">
+                    <i class="fas fa-trash"></i> Effacer
+                </button>
             </div>
-            <button id="fullscreen"><i class="fas fa-expand"></i></button>
         </div>
+
+        <div class="tag-cloud" id="tagHistory">
+            <!-- Tags récents seront ajoutés ici -->
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalImages">0</div>
+                <div class="stat-label">Images trouvées</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="favorites">0</div>
+                <div class="stat-label">Favoris</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSearches">0</div>
+                <div class="stat-label">Recherches</div>
+            </div>
+        </div>
+
+        <div class="gallery" id="images">
+            <!-- Les images seront ajoutées ici -->
+        </div>
+    </main>
+
+    <div id="toast"></div>
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
     </div>
 
     <script>
-        const video = document.getElementById('video');
-        const playPauseBtn = document.getElementById('playPause');
-        const muteButton = document.getElementById('muteButton');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeLevel = document.getElementById('volumeLevel');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progressBar');
-        const errorMessage = document.getElementById('errorMessage');
-        const videoUrlInput = document.getElementById('videoUrl');
-        const loadVideoBtn = document.getElementById('loadVideo');
-
-        // Lecture / Pause
-        playPauseBtn.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                video.pause();
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        });
-
-        // Gestion du volume
-        muteButton.addEventListener('click', () => {
-            video.muted = !video.muted;
-            updateVolumeIcon();
-        });
-
-        const updateVolumeIcon = () => {
-            const icon = video.muted || video.volume === 0 ? 'volume-mute' : video.volume < 0.5 ? 'volume-down' : 'volume-up';
-            muteButton.innerHTML = `<i class="fas fa-${icon}"></i>`;
+        // État global de l'application
+        const state = {
+            favorites: new Set(JSON.parse(localStorage.getItem('favorites')) || []),
+            tagHistory: JSON.parse(localStorage.getItem('tagHistory')) || [],
+            searches: parseInt(localStorage.getItem('totalSearches')) || 0,
+            darkMode: localStorage.getItem('darkMode') === 'true'
         };
 
-        volumeSlider.addEventListener('click', (e) => {
-            const rect = volumeSlider.getBoundingClientRect();
-            const volume = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-            video.volume = volume;
-            video.muted = false;
-            volumeLevel.style.width = `${volume * 100}%`;
-            updateVolumeIcon();
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            updateStats();
+            loadTagSuggestions();
+            updateTagHistory();
+            applyTheme();
         });
 
-        // Mise à jour du progress
-        video.addEventListener('timeupdate', () => {
-            const percent = (video.currentTime / video.duration) * 100;
-            progressBar.style.width = `${percent}%`;
-        });
+        function initializeApp() {
+            // Événements
+            document.getElementById('tagInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter') fetchImages();
+            });
 
-        // Changement d'URL
-        loadVideoBtn.addEventListener('click', () => {
-            const newUrl = videoUrlInput.value.trim();
-            if (newUrl) {
-                video.src = newUrl;
-                video.play().catch(() => showError("URL invalide"));
+            document.getElementById('toggleTheme').addEventListener('click', toggleTheme);
+            document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
+
+            // Mise à jour des statistiques initiales
+            document.getElementById('favorites').textContent = state.favorites.size;
+            document.getElementById('totalSearches').textContent = state.searches;
+        }
+
+        function toggleTheme() {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const root = document.documentElement;
+            if (state.darkMode) {
+                root.style.setProperty('--background', '#1a1a1a');
+                root.style.setProperty('--card-background', '#2d2d2d');
+                root.style.setProperty('--text-color', '#ffffff');
+                document.getElementById('toggleTheme').innerHTML = '<i class="fas fa-sun"></i>';
             } else {
-                showError("Veuillez entrer une URL valide.");
+                root.style.setProperty('--background', '#f5f5f5');
+                root.style.setProperty('--card-background', '#ffffff');
+                root.style.setProperty('--text-color', '#333333');
+                document.getElementById('toggleTheme').innerHTML = '<i class="fas fa-moon"></i>';
             }
-        });
+        }
 
-        const showError = (message) => {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            setTimeout(() => errorMessage.style.display = 'none', 3000);
-        };
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function loadTagSuggestions() {
+            const suggestions = ['hug', 'kiss', 'pat', 'wave', 'smile', 'wink', 'dance'];
+            const datalist = document.getElementById('tagSuggestions');
+            datalist.innerHTML = suggestions.map(tag => `<option value="${tag}">`).join('');
+        }
+
+        function updateTagHistory() {
+            const historyContainer = document.getElementById('tagHistory');
+            historyContainer.innerHTML = '';
+            
+            [...new Set(state.tagHistory)].slice(-8).forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagElement.onclick = () => {
+                    document.getElementById('tagInput').value = tag;
+                    fetchImages();
+                };
+                historyContainer.appendChild(tagElement);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalSearches').textContent = state.searches;
+            document.getElementById('favorites').textContent = state.favorites.size;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.style.backgroundColor = type === 'success' 
+                ? 'var(--success-color)' 
+                : type === 'error' 
+                    ? 'var(--error-color)' 
+                    : 'var(--warning-color)';
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+
+        function showLoading(show = true) {
+            const loader = document.querySelector('.loading-overlay');
+            loader.style.display = show ? 'flex' : 'none';
+        }
+
+        async function fetchImages() {
+            const tag = document.getElementById('tagInput').value.trim();
+            const amount = document.getElementById('amountInput').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            if (!tag) {
+                showToast('Veuillez entrer un tag de recherche', 'error');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                // Simuler un appel API avec un délai
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Simuler des données d'images (à remplacer par un vrai appel API)
+                const images = Array(parseInt(amount)).fill().map((_, index) => ({
+                    id: Date.now() + index,
+                    url: `/api/placeholder/400/320`,
+                    title: `Image ${index + 1} pour "${tag}"`,
+                    tags: [tag, ...getRandomTags()],
+                    likes: Math.floor(Math.random() * 1000)
+                }));
+
+                displayImages(images);
+                
+                // Mettre à jour l'historique et les statistiques
+                if (!state.tagHistory.includes(tag)) {
+                    state.tagHistory.push(tag);
+                    localStorage.setItem('tagHistory', JSON.stringify(state.tagHistory));
+                    updateTagHistory();
+                }
+
+                state.searches++;
+                localStorage.setItem('totalSearches', state.searches);
+                updateStats();
+
+                document.getElementById('totalImages').textContent = images.length;
+                showToast(`${images.length} images trouvées`, 'success');
+            } catch (error) {
+                showToast('Erreur lors de la recherche d\'images', 'error');
+                console.error('Erreur:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function getRandomTags() {
+            const possibleTags = ['anime', 'cute', 'kawaii', 'happy', 'sad', 'funny'];
+            return possibleTags
+                .sort(() => Math.random() - 0.5)
+                .slice(0, Math.floor(Math.random() * 3) + 1);
+        }
+
+        function displayImages(images) {
+            const gallery = document.getElementById('images');
+            gallery.innerHTML = '';
+
+            images.forEach(image => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.innerHTML = `
+                    <img src="${image.url}" alt="${image.title}">
+                    <div class="image-actions">
+                        <button class="action-btn ${state.favorites.has(image.id) ? 'favorite' : ''}" 
+                                onclick="toggleFavorite(${image.id})">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <button class="action-btn" onclick="downloadImage(${image.id})">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="image-info">
+                        <h3>${image.title}</h3>
+                        <div class="tag-cloud">
+                            ${image.tags.map(tag => `
+                                <span class="tag" onclick="searchTag('${tag}')">${tag}</span>
+                            `).join('')}
+                        </div>
+                        <p><i class="fas fa-heart"></i> ${image.likes}</p>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        }
+
+        function toggleFavorite(imageId) {
+            if (state.favorites.has(imageId)) {
+                state.favorites.delete(imageId);
+                showToast('Retiré des favoris', 'warning');
+            } else {
+                state.favorites.add(imageId);
+                showToast('Ajouté aux favoris', 'success');
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify([...state.favorites]));
+            updateStats();
+        }
+
+        function downloadImage(imageId) {
+            // Simulation du téléchargement
+            showToast('Téléchargement commencé...', 'success');
+        }
+
+        function searchTag(tag) {
+            document.getElementById('tagInput').value = tag;
+            fetchImages();
+        }
+
+        function clearResults() {
+            document.getElementById('images').innerHTML = '';
+            document.getElementById('tagInput').value = '';
+            document.getElementById('totalImages').textContent = '0';
+            showToast('Résultats effacés', 'warning');
+        }
     </script>
 </body>
 </html>
