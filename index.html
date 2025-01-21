@@ -3,292 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche Rule34 | Galerie</title>
+    <title>Anime Media Viewer</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
             color: #fff;
             margin: 0;
             padding: 0;
         }
-
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            text-align: center;
-        }
-
         h1 {
-            font-size: 2em;
-            color: #00ff00;
-            margin: 20px 0;
-        }
-
-        input {
-            padding: 10px;
-            font-size: 1em;
-            border-radius: 5px;
-            width: 70%;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1em;
-            background-color: #00ff00;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #00cc00;
-        }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
+            font-size: 2.5em;
             margin-top: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
         }
-
-        .gallery img, .gallery video {
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        select, button {
             width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin: 10px 0;
             border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
+            border: none;
+            outline: none;
+            transition: all 0.3s ease;
         }
-
-        .gallery img:hover, .gallery video:hover {
-            transform: scale(1.05);
+        select {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
         }
-
-        /* Modal style */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            overflow: auto;
-            text-align: center;
-        }
-
-        .modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            margin-top: 50px;
-            display: inline-block;
-        }
-
-        .close {
-            position: absolute;
-            top: 20px;
-            right: 35px;
+        button {
+            background: #ff4f81;
             color: #fff;
-            font-size: 40px;
             font-weight: bold;
             cursor: pointer;
         }
-
-        .close:hover,
-        .close:focus {
-            color: #f00;
-            text-decoration: none;
-            cursor: pointer;
+        button:hover {
+            background: #ff165d;
         }
-
-        /* Pagination style */
-        .pagination {
-            display: inline-block;
+        #content-container {
+            position: relative;
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 15px;
             margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-
-        .pagination a {
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            margin: 0 5px;
-            border-radius: 5px;
-            background-color: #00ff00;
+        img, video {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
         }
-
-        .pagination a:hover {
-            background-color: #00cc00;
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
         }
-
-        .pagination a.active {
-            background-color: #00cc00;
-            font-weight: bold;
-        }
-
-        .pagination .disabled {
-            background-color: #555;
-            pointer-events: none;
-        }
-
     </style>
 </head>
 <body>
+
+    <h1>Anime Media Viewer</h1>
+
     <div class="container">
-        <h1>Galerie Rule34</h1>
-        <input type="text" id="searchInput" placeholder="Rechercher des images..." />
-        <button onclick="searchImages()">Rechercher</button>
-        <div id="gallery" class="gallery"></div>
+        <label for="api-select">Sélectionnez l'API :</label>
+        <select id="api-select" onchange="fetchCategories()">
+            <option value="nekos.best">Nekos Best</option>
+            <option value="waifu.im">Waifu.im</option>
+            <option value="rule34.xxx">Rule34.xxx</option>
+        </select>
 
-        <!-- Pagination Controls -->
-        <div id="pagination" class="pagination"></div>
+        <label for="category-select">Catégorie :</label>
+        <select id="category-select"></select>
+
+        <button onclick="getAnimeContent()">Obtenir un nouveau média</button>
+
+        <div id="content-container">
+            <img id="anime-image" src="" alt="Anime Media">
+        </div>
     </div>
 
-    <!-- Modal pour afficher l'image en grand -->
-    <div id="imageModal" class="modal">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <img class="modal-content" id="modalImage">
-    </div>
+    <div class="footer">© 2025 Anime Media Viewer. All Rights Reserved.</div>
 
     <script>
-        let currentPage = 1;
-        const resultsPerPage = 15; // Modifié pour 15 résultats par page
-        let searchResults = [];
+        const waifuCategories = {
+            "versatile": ["maid", "waifu", "marin-kitagawa", "mori-calliope", "raiden-shogun", "oppai", "selfies", "uniform", "kamisato-ayaka"],
+            "nsfw": ["ass", "hentai", "milf", "oral", "paizuri", "ecchi", "ero"]
+        };
 
-        // Fonction de recherche d'images
-        async function searchImages() {
-            const searchInput = document.getElementById("searchInput").value;
-            const gallery = document.getElementById("gallery");
-            const pagination = document.getElementById("pagination");
-            gallery.innerHTML = "";  // Réinitialiser la galerie avant de charger les nouvelles images
-            pagination.innerHTML = ""; // Réinitialiser la pagination
+        const rule34Tags = ["anime", "hentai", "ecchi", "furry", "pokemon", "genshin_impact", "overwatch", "naruto"];
 
-            if (!searchInput) {
-                alert("Veuillez entrer un terme de recherche.");
-                return;
-            }
+        async function fetchCategories() {
+            const api = document.getElementById('api-select').value;
+            const select = document.getElementById('category-select');
+            select.innerHTML = '';
 
-            // URL de l'API avec le terme de recherche
-            const url = `https://cors-anywhere.herokuapp.com/https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${searchInput}&json=1`;
-
-            try {
-                const response = await fetch(url);
-                
-                // Vérification si la requête a bien fonctionné
-                if (!response.ok) {
-                    throw new Error('Erreur réseau : ' + response.statusText);
-                }
-
-                const data = await response.json();
-                searchResults = data || [];
-
-                // Afficher les résultats pour la première page
-                displayResults(currentPage);
-
-                // Créer les boutons de pagination
-                const totalPages = Math.ceil(searchResults.length / resultsPerPage);
-                const paginationRange = 2; // Nombre de pages à afficher de chaque côté de la page actuelle
-
-                // Création des boutons de navigation
-                if (currentPage > 1) {
-                    const prevLink = document.createElement("a");
-                    prevLink.href = "#";
-                    prevLink.textContent = "Précédent";
-                    prevLink.onclick = function () {
-                        currentPage--;
-                        displayResults(currentPage);
-                    };
-                    pagination.appendChild(prevLink);
-                }
-
-                // Créer des boutons de page avec une plage dynamique
-                for (let i = 1; i <= totalPages; i++) {
-                    if (i === 1 || i === totalPages || (i >= currentPage - paginationRange && i <= currentPage + paginationRange)) {
-                        const pageLink = document.createElement("a");
-                        pageLink.href = "#";
-                        pageLink.textContent = i;
-                        
-                        // Ajout de la classe 'active' seulement si la page actuelle est celle de la pagination
-                        if (i === currentPage) {
-                            pageLink.classList.add("active");
-                        }
-
-                        pageLink.onclick = function () {
-                            currentPage = i;
-                            displayResults(currentPage);
-                        };
-                        pagination.appendChild(pageLink);
+            if (api === 'nekos.best') {
+                try {
+                    const response = await fetch('https://nekos.best/api/v2/endpoints');
+                    const data = await response.json();
+                    for (const category in data) {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                        select.appendChild(option);
                     }
+                } catch (error) {
+                    console.error("Erreur lors de la récupération des catégories de Nekos Best:", error);
                 }
-
-                // Créer un bouton "Suivant"
-                if (currentPage < totalPages) {
-                    const nextLink = document.createElement("a");
-                    nextLink.href = "#";
-                    nextLink.textContent = "Suivant";
-                    nextLink.onclick = function () {
-                        currentPage++;
-                        displayResults(currentPage);
-                    };
-                    pagination.appendChild(nextLink);
+            } else if (api === 'waifu.im') {
+                for (const categoryType in waifuCategories) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = categoryType.toUpperCase();
+                    waifuCategories[categoryType].forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                        optgroup.appendChild(option);
+                    });
+                    select.appendChild(optgroup);
                 }
-            } catch (error) {
-                console.error("Erreur lors de la récupération des données:", error);
-                alert("Erreur lors de la récupération des données : " + error.message);
+            } else if (api === 'rule34.xxx') {
+                rule34Tags.forEach(tag => {
+                    const option = document.createElement('option');
+                    option.value = tag;
+                    option.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+                    select.appendChild(option);
+                });
             }
         }
 
-        // Fonction pour afficher les résultats d'une page
-        function displayResults(page) {
-            const gallery = document.getElementById("gallery");
-            gallery.innerHTML = ""; // Réinitialiser la galerie
+        async function getAnimeContent() {
+            const api = document.getElementById('api-select').value;
+            const category = document.getElementById('category-select').value;
+            const container = document.getElementById('content-container');
+            let mediaUrl = '';
 
-            const startIndex = (page - 1) * resultsPerPage;
-            const endIndex = Math.min(startIndex + resultsPerPage, searchResults.length);
-            const pageResults = searchResults.slice(startIndex, endIndex);
-
-            pageResults.forEach(item => {
-                // S'assurer que 'tags' est un tableau
-                const tags = Array.isArray(item.tags) ? item.tags : [item.tags];
-
-                // Créer un élément image ou vidéo pour chaque résultat
-                const mediaElement = document.createElement("a");
-                mediaElement.href = item.file_url;
-                mediaElement.target = "_blank"; // Ouvrir dans un nouvel onglet
-
-                if (item.file_url.endsWith('.mp4') || item.file_url.endsWith('.webm')) {
-                    // Si c'est une vidéo
-                    const videoElement = document.createElement("video");
-                    videoElement.src = item.file_url;
-                    videoElement.alt = tags.join(", ");
-                    videoElement.controls = true;
-                    mediaElement.appendChild(videoElement);
-                } else {
-                    // Si c'est une image ou un GIF
-                    const imgElement = document.createElement("img");
-                    imgElement.src = item.file_url;
-                    imgElement.alt = tags.join(", ");
-                    mediaElement.appendChild(imgElement);
+            if (api === 'nekos.best') {
+                try {
+                    const response = await fetch(`https://nekos.best/api/v2/${category}`);
+                    const data = await response.json();
+                    mediaUrl = data.results[0].url;
+                } catch (error) {
+                    alert('Erreur de chargement de l\'image.');
+                    return;
                 }
+            } else if (api === 'waifu.im') {
+                try {
+                    const response = await fetch(`https://api.waifu.im/search?included_tags=${category}`);
+                    const data = await response.json();
+                    if (data.images.length > 0) {
+                        mediaUrl = data.images[0].url;
+                    }
+                } catch (error) {
+                    alert('Erreur de chargement de l\'image.');
+                    return;
+                }
+            } else if (api === 'rule34.xxx') {
+                try {
+                    const response = await fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${category}&json=1`);
+                    const data = await response.json();
+                    if (data.length > 0) {
+                        mediaUrl = data[Math.floor(Math.random() * data.length)].file_url;
+                    }
+                } catch (error) {
+                    alert('Erreur de chargement du média.');
+                    return;
+                }
+            }
 
-                gallery.appendChild(mediaElement);
-            });
+            container.innerHTML = '';
+            if (mediaUrl.match(/\.(jpeg|jpg|png|gif)$/)) {
+                const img = document.createElement('img');
+                img.src = mediaUrl;
+                img.alt = "Anime Image";
+                container.appendChild(img);
+            } else if (mediaUrl.match(/\.(mp4|webm)$/)) {
+                const video = document.createElement('video');
+                video.src = mediaUrl;
+                video.controls = true;
+                video.autoplay = true;
+                container.appendChild(video);
+            } else {
+                alert("Type de média inconnu.");
+            }
         }
 
-        // Fonction pour ouvrir l'image en grand dans un modal
-        function openModal(imageUrl) {
-            const modal = document.getElementById("imageModal");
-            const modalImage = document.getElementById("modalImage");
-            modal.style.display = "block";
-            modalImage.src = imageUrl;
-        }
-
-        // Fonction pour fermer le modal
-        function closeModal() {
-            const modal = document.getElementById("imageModal");
-            modal.style.display = "none";
-        }
-
+        fetchCategories().then(getAnimeContent);
     </script>
 </body>
 </html>
