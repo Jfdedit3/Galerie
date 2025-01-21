@@ -23,6 +23,7 @@
             margin: 20px 0;
         }
 
+        select,
         button {
             padding: 10px 20px;
             margin: 10px;
@@ -31,6 +32,11 @@
             background-color: #007bff;
             color: white;
             cursor: pointer;
+        }
+
+        select {
+            background-color: #fff;
+            color: #333;
         }
 
         button:hover {
@@ -54,13 +60,38 @@
     <h1>API Viewer</h1>
 
     <div>
-        <button onclick="fetchNeko()">Get Neko Image</button>
-        <button onclick="fetchWaifu()">Get Waifu Image</button>
+        <select id="apiSelect">
+            <option value="nekos.best">Nekos.best</option>
+            <option value="waifu.im">Waifu.im</option>
+        </select>
+        <button onclick="fetchTags()">Get Tags</button>
     </div>
 
     <div class="results" id="results"></div>
 
     <script>
+        async function fetchTags() {
+            const api = document.getElementById('apiSelect').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (api === 'nekos.best') {
+                const response = await fetch('https://nekos.best/api/v2/endpoints');
+                const data = await response.json();
+                resultsDiv.innerHTML = '<h2>Nekos.best Tags</h2>';
+                data.endpoints.forEach(endpoint => {
+                    resultsDiv.innerHTML += `<p>${endpoint}</p>`;
+                });
+            } else if (api === 'waifu.im') {
+                const response = await fetch('https://api.waifu.im/tags');
+                const data = await response.json();
+                resultsDiv.innerHTML = '<h2>Waifu.im Tags</h2>';
+                data.tags.forEach(tag => {
+                    resultsDiv.innerHTML += `<p>${tag.name}</p>`;
+                });
+            }
+        }
+
         async function fetchNeko() {
             const response = await fetch('https://nekos.best/api/v2/neko');
             const data = await response.json();
