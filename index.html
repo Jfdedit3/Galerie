@@ -1,191 +1,93 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image API Sélection</title>
+    <title>API Viewer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            color: #333;
             margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-        .container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 800px;
-        }
+
         h1 {
-            text-align: center;
+            margin: 20px 0;
         }
-        select, button {
-            padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-            font-size: 16px;
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
         }
-        .image-container {
-            text-align: center;
-            margin-top: 20px;
+
+        button:hover {
+            background-color: #0056b3;
         }
-        img {
+
+        .results img {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
+            margin: 10px 0;
         }
-        .error-message {
-            color: red;
+
+        .results {
             text-align: center;
+            margin: 20px;
         }
     </style>
 </head>
+
 <body>
+    <h1>API Viewer</h1>
 
-<div class="container">
-    <h1>Images d'Anime Aléatoires</h1>
-    <label for="api-select">Sélectionnez l'API :</label>
-    <select id="api-select">
-        <option value="nekos.best">Nekos.best</option>
-        <option value="waifu.im">Waifu.im</option>
-        <option value="rule34.xxx">Rule34.xxx</option>
-    </select>
-
-    <label for="category-select">Catégorie :</label>
-    <select id="category-select"></select>
-
-    <button onclick="fetchImage()">Obtenir l'image</button>
-
-    <div class="error-message" id="error-message"></div>
-
-    <div class="image-container">
-        <img id="image" src="" alt="Image à afficher">
+    <div>
+        <button onclick="fetchNeko()">Get Neko Image</button>
+        <button onclick="fetchWaifu()">Get Waifu Image</button>
+        <button onclick="fetchRule34()">Get Rule34 Image</button>
     </div>
-</div>
 
-<script>
-const waifuCategories = {
-    "general": ["waifu", "maid", "oppai", "selfies", "uniform", "yuri", "thighhighs", "bunnygirl"],
-    "nsfw": ["ass", "hentai", "milf", "oral", "paizuri", "ecchi", "ero"]
-};
+    <div class="results" id="results"></div>
 
-const rule34Tags = [
-    "anime", "hentai", "ecchi", "furry", "genshin_impact", "pokemon", 
-    "overwatch", "naruto", "one_piece", "attack_on_titan", "bleach", 
-    "tokyo_ghoul", "demon_slayer", "fairy_tail", "rezero", "darling_in_the_franxx",
-    "kill_la_kill", "highschool_dxd", "konosuba", "sword_art_online",
-    "fire_emblem", "persona", "league_of_legends", "fate_series", "neko", 
-    "maid", "yuri", "yaoi", "tentacles", "schoolgirl", "milf", 
-    "loli", "thighhighs", "bunny_girl", "glasses", "lingerie", 
-    "elf", "monster_girl", "succubus", "bondage", "swimsuit", 
-    "nurse", "catgirl", "cheerleader", "cosplay", "oppai", 
-    "paizuri", "ass", "oral", "public", "futa", "dominant", 
-    "submission", "group", "threesome", "ahegao", "dark_skin", 
-    "gyaru", "trap", "smoking", "pregnant", "wet", "bath", 
-    "shower", "feet", "panties", "stockings", "blowjob", "handjob"
-];
-
-function fetchCategories() {
-    const api = document.getElementById('api-select').value;
-    const select = document.getElementById('category-select');
-    select.innerHTML = '';
-
-    if (api === 'nekos.best') {
-        fetch('https://nekos.best/api/v2/endpoints')
-            .then(response => response.json())
-            .then(data => {
-                for (const category in data) {
-                    const option = document.createElement('option');
-                    option.value = category;
-                    option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-                    select.appendChild(option);
-                }
-            }).catch(error => showError("Erreur lors du chargement de l'API Nekos.best"));
-    } else if (api === 'waifu.im') {
-        for (const categoryType in waifuCategories) {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = categoryType.toUpperCase();
-            waifuCategories[categoryType].forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-                optgroup.appendChild(option);
-            });
-            select.appendChild(optgroup);
+    <script>
+        async function fetchNeko() {
+            const response = await fetch('https://nekos.best/api/v2/neko');
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<img src="${data.results[0].url}" alt="Neko Image">`;
         }
-    } else if (api === 'rule34.xxx') {
-        rule34Tags.forEach(tag => {
-            const option = document.createElement('option');
-            option.value = tag;
-            option.textContent = tag.charAt(0).toUpperCase() + tag.slice(1).replace(/_/g, " ");
-            select.appendChild(option);
-        });
-    }
-}
 
-function fetchImage() {
-    const api = document.getElementById('api-select').value;
-    const category = document.getElementById('category-select').value;
-    const image = document.getElementById('image');
-    const errorMessage = document.getElementById('error-message');
-    
-    errorMessage.textContent = ''; // Clear previous error message
-    
-    if (api === 'nekos.best') {
-        fetch(`https://nekos.best/api/v2/${category}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.url) {
-                    image.src = data.url;
-                    image.alt = category;
-                } else {
-                    showError("Aucune image trouvée.");
-                }
-            }).catch(error => showError("Erreur lors du chargement de l'API Nekos.best"));
-    } else if (api === 'waifu.im') {
-        fetch(`https://api.waifu.im/search/?q=${category}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.images && data.images.length > 0) {
-                    image.src = data.images[0].url;
-                    image.alt = category;
-                } else {
-                    showError("Aucune image trouvée.");
-                }
-            }).catch(error => showError("Erreur lors du chargement de l'API Waifu.im"));
-    } else if (api === 'rule34.xxx') {
-        fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${category}`)
-            .then(response => response.json())
-            .then(data => {
-                const posts = data.posts;
-                if (posts.length > 0) {
-                    const post = posts[Math.floor(Math.random() * posts.length)];
-                    if (post.file_url) {
-                        image.src = post.file_url;
-                        image.alt = category;
-                    } else {
-                        showError("Aucune image trouvée.");
-                    }
-                } else {
-                    showError("Aucune image trouvée.");
-                }
-            }).catch(error => showError("Erreur lors du chargement de l'API Rule34.xxx"));
-    }
-}
+        async function fetchWaifu() {
+            const response = await fetch('https://api.waifu.im/search');
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<img src="${data.images[0].url}" alt="Waifu Image">`;
+        }
 
-function showError(message) {
-    document.getElementById('error-message').textContent = message;
-}
+        async function fetchRule34() {
+            const response = await fetch('https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=random&json=1');
+            const posts = await response.json();
+            const resultsDiv = document.getElementById('results');
 
-fetchCategories();
-document.getElementById('api-select').addEventListener('change', fetchCategories);
-</script>
-
+            if (posts.length > 0) {
+                resultsDiv.innerHTML = `<img src="${posts[0].sample_url}" alt="Rule34 Image">`;
+            } else {
+                resultsDiv.innerHTML = `<p>No images found.</p>`;
+            }
+        }
+    </script>
 </body>
+
 </html>
