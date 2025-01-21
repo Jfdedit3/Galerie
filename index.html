@@ -40,6 +40,10 @@
             height: auto;
             border-radius: 8px;
         }
+        .error-message {
+            color: red;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +61,8 @@
     <select id="category-select"></select>
 
     <button onclick="fetchImage()">Obtenir l'image</button>
+
+    <div class="error-message" id="error-message"></div>
 
     <div class="image-container">
         <img id="image" src="" alt="Image à afficher">
@@ -100,7 +106,7 @@ function fetchCategories() {
                     option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
                     select.appendChild(option);
                 }
-            }).catch(error => console.error("Erreur lors du chargement:", error));
+            }).catch(error => showError("Erreur lors du chargement de l'API Nekos.best"));
     } else if (api === 'waifu.im') {
         for (const categoryType in waifuCategories) {
             const optgroup = document.createElement('optgroup');
@@ -127,14 +133,21 @@ function fetchImage() {
     const api = document.getElementById('api-select').value;
     const category = document.getElementById('category-select').value;
     const image = document.getElementById('image');
-
+    const errorMessage = document.getElementById('error-message');
+    
+    errorMessage.textContent = ''; // Clear previous error message
+    
     if (api === 'nekos.best') {
         fetch(`https://nekos.best/api/v2/${category}`)
             .then(response => response.json())
             .then(data => {
-                image.src = data.url;
-                image.alt = category;
-            }).catch(error => console.error("Erreur lors du chargement:", error));
+                if (data.url) {
+                    image.src = data.url;
+                    image.alt = category;
+                } else {
+                    showError("Aucune image trouvée.");
+                }
+            }).catch(error => showError("Erreur lors du chargement de l'API Nekos.best"));
     } else if (api === 'waifu.im') {
         fetch(`https://api.waifu.im/search/?q=${category}`)
             .then(response => response.json())
@@ -142,8 +155,10 @@ function fetchImage() {
                 if (data.images && data.images.length > 0) {
                     image.src = data.images[0].url;
                     image.alt = category;
+                } else {
+                    showError("Aucune image trouvée.");
                 }
-            }).catch(error => console.error("Erreur lors du chargement:", error));
+            }).catch(error => showError("Erreur lors du chargement de l'API Waifu.im"));
     } else if (api === 'rule34.xxx') {
         fetch(`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${category}`)
             .then(response => response.json())
@@ -154,10 +169,18 @@ function fetchImage() {
                     if (post.file_url) {
                         image.src = post.file_url;
                         image.alt = category;
+                    } else {
+                        showError("Aucune image trouvée.");
                     }
+                } else {
+                    showError("Aucune image trouvée.");
                 }
-            }).catch(error => console.error("Erreur lors du chargement:", error));
+            }).catch(error => showError("Erreur lors du chargement de l'API Rule34.xxx"));
     }
+}
+
+function showError(message) {
+    document.getElementById('error-message').textContent = message;
 }
 
 fetchCategories();
