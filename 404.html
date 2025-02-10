@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirection Twitter</title>
+  <script>
+    // Fonction de redirection dynamique
+    window.onload = function() {
+      const path = window.location.pathname;
+      if (path.startsWith("/Galerie/")) {
+        const newUrl = "https://twitter.com" + path.replace("/Galerie", "");
+        window.location.href = newUrl;
+      } else {
+        document.body.innerHTML = "<h1>Page non trouvée</h1><p>L'URL que vous avez entrée est incorrecte.</p>";
+      }
+    };
+  </script>
+</head>
+<body>
+  <h1>Redirection en cours...</h1>
+</body>
+</html>
