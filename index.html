@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirection Twitter</title>
+  <title>Twitter URL Redirector</title>
   <script>
-    window.onload = function() {
-      const path = window.location.pathname;
-
-      if (path.startsWith("/Galerie/")) {
-        // Remplace /Galerie/ par l'URL complète de Twitter
-        const newUrl = "https://twitter.com" + path.replace("/Galerie", "");
-        window.location.href = newUrl;
-      } else {
-        document.body.innerHTML = `
-          <h1>Bienvenue sur le redirectionneur de Twitter</h1>
-          <p>Utilisez une URL au format : <code>https://jfdedit3.github.io/Galerie/username/status/123456</code></p>
-          <p>Vous serez automatiquement redirigé vers l'URL Twitter correspondante.</p>
-        `;
+    function redirectUrl() {
+      const inputUrl = document.getElementById("twitterUrl").value;
+      try {
+        const url = new URL(inputUrl);
+        if (url.hostname === "twitter.com") {
+          const newUrl = inputUrl.replace("twitter.com", "jfdedit3.github.io/Galerie");
+          window.location.href = newUrl;
+        } else {
+          document.getElementById("output").innerText = "Veuillez entrer une URL Twitter valide.";
+        }
+      } catch {
+        document.getElementById("output").innerText = "URL invalide.";
       }
-    };
+    }
   </script>
 </head>
 <body>
-  <h1>Redirection en cours...</h1>
+  <h1>Twitter URL Redirector</h1>
+  <p>Collez une URL Twitter ci-dessous pour obtenir une version modifiée :</p>
+  <input type="text" id="twitterUrl" placeholder="https://twitter.com/username/status/123456" style="width: 100%; padding: 8px;">
+  <button onclick="redirectUrl()">Modifier et Rediriger</button>
+  <p id="output" style="margin-top: 20px; font-weight: bold;"></p>
 </body>
 </html>
