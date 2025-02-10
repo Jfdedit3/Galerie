@@ -1,1 +1,31 @@
-<iframe src="https://thingproxy.freeboard.io/fetch/https://voiranime.com" width="100%" height="100%" style="border:none;" allowfullscreen></iframe>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitter URL Modifier</title>
+  <script>
+    function modifyUrl() {
+      const inputUrl = document.getElementById("twitterUrl").value;
+      try {
+        const url = new URL(inputUrl);
+        if (url.hostname === "twitter.com") {
+          const newUrl = url.href.replace("twitter.com", "tondomaine.com");
+          document.getElementById("outputUrl").innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
+        } else {
+          document.getElementById("outputUrl").innerText = "Veuillez entrer une URL Twitter valide.";
+        }
+      } catch {
+        document.getElementById("outputUrl").innerText = "URL invalide.";
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Twitter URL Modifier</h1>
+  <p>Collez une URL Twitter ci-dessous :</p>
+  <input type="text" id="twitterUrl" placeholder="https://twitter.com/username/status/123456" style="width: 100%; padding: 8px;">
+  <button onclick="modifyUrl()">Modifier l'URL</button>
+  <p id="outputUrl" style="margin-top: 20px; font-weight: bold;"></p>
+</body>
+</html>
