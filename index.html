@@ -10,7 +10,7 @@
       try {
         const url = new URL(inputUrl);
         if (url.hostname === "twitter.com") {
-          const newUrl = url.href.replace("twitter.com", "tondomaine.com");
+          const newUrl = url.href.replace("twitter.com", "https://jfdedit3.github.io/Galerie/");
           document.getElementById("outputUrl").innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
         } else {
           document.getElementById("outputUrl").innerText = "Veuillez entrer une URL Twitter valide.";
